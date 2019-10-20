@@ -1,6 +1,6 @@
 
 # LPRankSyncBot
-LPRankSyncBot is a bot for Discord and Minecraft-Server. It synchronizes the Minecraft rank with Discord Roles.
+LPRankSyncBot is a bot for Discord and Minecraft-Server. It synchronizes the Minecraft LuckyPerms ranks with Discord Roles.
 
 ## used packages
 * [Discord.net](https://www.nuget.org/packages/Discord.Net/) 2.1.1
