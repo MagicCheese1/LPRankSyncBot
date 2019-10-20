@@ -52,5 +52,15 @@ For Linux: `dotnet publish -c Release -r linux-x64 --self-contained true`
 
 For Linux ARM: `dotnet publish -c Release -r linux-arm --self-contained true`
 
+### Building/deploying single-file (platform-dependent) executables
+For Windows x86: `dotnet publish -c Release -r win-x86 /p:PublishSingleFile=true`
+
+For Windows x64: `dotnet publish -c Release -r win-x64 /p:PublishSingleFile=true`
+
+For Linux: `dotnet publish -c Release -r linux-x64 /p:PublishSingleFile=true`
+
+For Linux ARM: `dotnet publish -c Release -r linux-arm /p:PublishSingleFile=true`
+ 
+
 ## License
 This repo is licensed under the [MIT License](https://choosealicense.com/licenses/mit/) - see the [LICENSE.txt](LICENSE.txt) file for details
