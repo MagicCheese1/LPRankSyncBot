@@ -1,6 +1,6 @@
 
 # LPRankSyncBot
-LPRankSyncBot is a bot for Discord and Minecraft-Server. It synchronizes the Minecraft LuckyPerms ranks with Discord Roles.
+LPRankSyncBot is a bot for Discord and Minecraft-Server. It synchronizes the Minecraft LuckPerms ranks with Discord Roles.
 
 ## Used packages
 * [Discord.net](https://www.nuget.org/packages/Discord.Net/) 2.1.1
@@ -15,11 +15,14 @@ LPRankSyncBot is a bot for Discord and Minecraft-Server. It synchronizes the Min
 ### Cloning
 #### cloning the repository: 
 
-`git clone https://github.com/Dodison/LPRankSyncBot.git`
+1. `git clone https://github.com/Dodison/LPRankSyncBot.git`
+2. `cd LPRankSyncBot`
+3. `Dotnet restore` 
 
 #### Updating the clone with the official repo:
 
-`git pull`
+1. `git pull`
+2. `Dotnet restore`
 
 ### Building/deploying and running framework-dependent executables
 build DLL: `dotnet Build` (output in bin/Debug/netcoreapp3.0/)
@@ -32,13 +35,13 @@ deploying/publishing DLL: `dotnet publish -c Release`
 
 #### Deploying/publishing (platform-dependent) executables: 
 
-For Windows x86: `dotnet publish -c Release -r win-x86 --self-contained false`
+For Windows x86: `dotnet publish -c Release -r win-x86`
 
-For Windows x64: `dotnet publish -c Release -r win-x64 --self-contained false`
+For Windows x64: `dotnet publish -c Release -r win-x64`
 
-For Linux: `dotnet publish -c Release -r linux-x64 --self-contained false`
+For Linux: `dotnet publish -c Release -r linux-x64`
 
-For Linux ARM: `dotnet publish -c Release -r linux-arm --self-contained false`
+For Linux ARM: `dotnet publish -c Release -r linux-arm`
 
 ### Building/deploying self-contained (platform-dependent) executables 
 For Windows x86: `dotnet publish -c Release -r win-x86 --self-contained true`
