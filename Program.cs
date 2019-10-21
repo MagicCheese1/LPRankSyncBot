@@ -12,7 +12,7 @@ namespace LPRankSyncBot {
         private static void Main (string[] args) => new Program ().MainAsync ().GetAwaiter ().GetResult ();
 
         private async Task MainAsync () {
-            SettingsControl.load ();
+            SettingsControl.load (); //Load all the settings like bot token etc.
         }
     }
 }
