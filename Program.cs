@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using Discord.Commands;
 using Discord.Net;
@@ -12,7 +13,10 @@ namespace LPRankSyncBot {
         private static void Main (string[] args) => new Program ().MainAsync ().GetAwaiter ().GetResult ();
 
         private async Task MainAsync () {
-            SettingsControl.load (); //Load all the settings like bot token etc.
+            Util.Log ("Set BaseDirectory");
+            GlobalVariables.BaseDirectory = System.IO.Path.GetDirectoryName (Process.GetCurrentProcess ().MainModule.FileName); // Finds and saves the Directory, this program is running in 
+            SettingsControl.loadSettings (); //Load all the settings like bot token etc.
+            SettingsControl.LoadRoleDict (); // Load the role Dictonary
         }
     }
 }

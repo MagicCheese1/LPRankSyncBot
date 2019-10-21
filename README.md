@@ -5,6 +5,7 @@ LPRankSyncBot is a bot for Discord and Minecraft-Server. It synchronizes the Min
 ## Used packages
 * [Discord.net](https://www.nuget.org/packages/Discord.Net/) 2.1.1
 * [Newtonsoft.Json](https://www.nuget.org/packages/Newtonsoft.Json/) 12.0.2
+* [System.Data.SQlite](https://www.nuget.org/packages/System.Data.SQLite/) 1.0.111
 
 
 ## Prerequisites For development and building

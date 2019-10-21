@@ -6,5 +6,9 @@ namespace LPRankSyncBot {
         public static string DatabaseType;
         public static long UsernameChannel;
         public static string Token;
+        public static Dictionary<string, string> RoleDict = new Dictionary<string, string>();
+
+        public static List<string> LPRanks = new List<string>();
+        public static List<string> DCRanks = new List<string>();
     }
 }

@@ -1,31 +1,84 @@
 using System;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Collections.Generic;
+using System.Data.SQLite;
 using Newtonsoft.Json;
 
-namespace LPRankSyncBot {
+namespace LPRankSyncBot
+{
     public class SettingsControl {
-        public static void load () {
-            Util.Log ("Set BaseDirectory");
-            GlobalVariables.BaseDirectory = System.IO.Path.GetDirectoryName (Process.GetCurrentProcess ().MainModule.FileName); // Finds and saves the Directory, this program is running in 
-            Util.Log ("Searching LPRSB/LPRSBProperties.json");
-            if (!File.Exists (GlobalVariables.BaseDirectory + "/LPRSB/LPRSBProperties.json")) //Check if the Properties file exists if not generate one
+        public static void loadSettings () {
+            Util.Log ("Searching for LPRSB/Properties.json");
+            if (!File.Exists (GlobalVariables.BaseDirectory + "/LPRSB/Properties.json")) //Check if the Properties file exists if not generate one
                 GenerateProperties ();
-            string LPRSBPropertiesContent = File.ReadAllText (GlobalVariables.BaseDirectory + "/LPRSB/LPRSBProperties.json"); //Read Contents of Properties File
-            if (String.IsNullOrWhiteSpace (LPRSBPropertiesContent)) //If properties file empty generate one
+            string PropertiesContent = File.ReadAllText (GlobalVariables.BaseDirectory + "/LPRSB/Properties.json"); //Read Contents of Properties File
+            if (String.IsNullOrWhiteSpace (PropertiesContent)) //If properties file empty generate one
                 GenerateProperties ();
-            ESettings settings = JsonConvert.DeserializeObject<ESettings> (LPRSBPropertiesContent); //JSON file to object
-            Util.Log ("Loading LPRSB/LPRSBProperties.json");
+            ESettings settings = JsonConvert.DeserializeObject<ESettings> (PropertiesContent); //JSON file to object
+            Util.Log ("Loading LPRSB/Properties.json");
             GlobalVariables.DatabaseType = settings.DatabaseType; //Load all the Properties into GlobalVariables class
             GlobalVariables.UsernameChannel = settings.UsernameChannel;
             GlobalVariables.Token = settings.Token;
-            Util.Log ("LPRSB/LPRSBProperties.json loaded sucessfully");
+            Util.Log ("LPRSB/Properties.json loaded sucessfully!");
         }
 
-        public static void GenerateProperties () {
+        public static void LoadRoleDict()
+        {
+            Util.Log ("Searching for LPRSB/RoleDict.json");
+            if (!File.Exists (GlobalVariables.BaseDirectory + "/LPRSB/RoleDict.json")) //Check if the RoleDict file exists if not generate one
+                GenerateRoleDict ();
+             string RoleDictContent = File.ReadAllText (GlobalVariables.BaseDirectory + "/LPRSB/RoleDict.json"); //Read Contents of RoleDict File
+            if (String.IsNullOrWhiteSpace (RoleDictContent)) //If RoleDict file found but empty, generate one
+                GenerateRoleDict ();
+            Util.Log ("Loading LPRSB/RoleDict.json");
+            GlobalVariables.RoleDict = JsonConvert.DeserializeObject<Dictionary<string, string>>(RoleDictContent);
+        }
+
+        private static void GenerateRoleDict()
+        {
+            Dictionary<string, string> RoleDict = new Dictionary<string, string>();
+            Util.Log ("LPRSB/RoleDict.json not found, generating");
+            ReadLPDB();
+        }
+
+        private static void ReadLPDB()
+        {
+            // switch("SQLITE")
+            switch(GlobalVariables.DatabaseType.ToUpper())
+            {
+                case "SQLITE":
+                    using(var connection = new SQLiteConnection("data source=" + GlobalVariables.BaseDirectory + "/luckperms/luckperms-sqlite.db;mode=ReadOnly"))
+                    {
+                        using(var command = new SQLiteCommand(connection))
+                        {
+                            connection.Open();
+
+                            command.CommandText = "Select * From luckperms_groups";
+
+                            using(var reader = command.ExecuteReader())
+                            {
+                                while(reader.Read())
+                                {
+                                    GlobalVariables.LPRanks.Add(reader["name"].ToString());
+                                    
+                                }
+                            }
+                        }   
+                    }
+                    Util.Log("LP ranks found");
+                    foreach(var rank in GlobalVariables.LPRanks)
+                    {
+                        Console.Write(rank+", ");
+                    }
+                    break;
+                default:
+                    throw new Exception("The current Luckperms database is either invalid or not yet supported!");
+            }
+        }
+        private static void GenerateProperties () {
             ESettings settings = new ESettings ();
-            Util.Log ("LPRSB/LPRSBProperties.json not found, Generating");
+            Util.Log ("LPRSB/Properties.json not found, Generating");
             Util.Log ("Creating Directory");
             Directory.CreateDirectory(GlobalVariables.BaseDirectory + "/LPRSB/");
             Util.Log ("Searching for luckperms.conf");
@@ -64,9 +117,9 @@ namespace LPRankSyncBot {
                 } else
                     break;
             }
-            Util.Log ("Generating LPRSB/LPRSBProperties.json");
+            Util.Log ("LPRSB/Propertis.json generated Sucessfully!");
             string JSON = JsonConvert.SerializeObject (settings); // convert object to JSON
-            System.IO.File.WriteAllText (GlobalVariables.BaseDirectory + "/LPRSB/LPRSBProperties.json", JSON); // Create/Write JSON to Properties File
+            System.IO.File.WriteAllText (GlobalVariables.BaseDirectory + "/LPRSB/Properties.json", JSON); // Create/Write JSON to Properties File
         }
 
         public static string GetDatabaseType (string LPConfFile) {
