@@ -1,13 +1,18 @@
 using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Data.SQLite;
 using System.IO;
 using System.Linq;
-using System.Collections.Generic;
-using System.Data.SQLite;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using Newtonsoft.Json;
 
-namespace LPRankSyncBot
-{
+namespace LPRankSyncBot {
     public class SettingsControl {
+
+        private static string lpdbDataSource = "data source=" + GlobalVariables.BaseDirectory + "/luckperms/luckperms-sqlite.db;mode=ReadOnly";
+        private static string userdictdbDataSource = "data source=" + GlobalVariables.BaseDirectory + "/LPRSB/UserDict.db";
         public static void loadSettings () {
             Util.Log ("Searching for LPRSB/Properties.json");
             if (!File.Exists (GlobalVariables.BaseDirectory + "/LPRSB/Properties.json")) //Check if the Properties file exists if not generate one
@@ -23,64 +28,153 @@ namespace LPRankSyncBot
             Util.Log ("LPRSB/Properties.json loaded sucessfully!");
         }
 
-        public static void LoadRoleDict()
-        {
+        public static void LoadRoleDict () {
             Util.Log ("Searching for LPRSB/RoleDict.json");
             if (!File.Exists (GlobalVariables.BaseDirectory + "/LPRSB/RoleDict.json")) //Check if the RoleDict file exists if not generate one
                 GenerateRoleDict ();
-             string RoleDictContent = File.ReadAllText (GlobalVariables.BaseDirectory + "/LPRSB/RoleDict.json"); //Read Contents of RoleDict File
+            string RoleDictContent = File.ReadAllText (GlobalVariables.BaseDirectory + "/LPRSB/RoleDict.json"); //Read Contents of RoleDict File
             if (String.IsNullOrWhiteSpace (RoleDictContent)) //If RoleDict file found but empty, generate one
                 GenerateRoleDict ();
             Util.Log ("Loading LPRSB/RoleDict.json");
-            GlobalVariables.RoleDict = JsonConvert.DeserializeObject<Dictionary<string, string>>(RoleDictContent);
+            GlobalVariables.RoleDict = JsonConvert.DeserializeObject<Dictionary<string, string>> (RoleDictContent);
+            Util.Log ("LPRSB/RoleDict.json Loaded Sucessfully!");
         }
 
-        private static void GenerateRoleDict()
-        {
-            Dictionary<string, string> RoleDict = new Dictionary<string, string>();
+        public static void LoadUserDict () {
+            Util.Log ("Loading UserDict database");
+            if (!File.Exists (GlobalVariables.BaseDirectory + "/LPRSB/UserDict.db")) //Check if the UserDict database exists if not generate one
+                SQLiteConnection.CreateFile (GlobalVariables.BaseDirectory + "/LPRSB/UserDict.db");
+            using (var connection = new SQLiteConnection (userdictdbDataSource)) {
+                using (var command = new SQLiteCommand (connection)) {
+                    Util.Log ("opening connection");
+                    connection.Open ();
+                    command.CommandText = @"CREATE TABLE IF NOT EXISTS [USERDICT] (
+                                               [DCID] INTEGER  NULL,
+                                               [MCUUID] TEXT(36)  NULL
+                                               )";
+                    Util.Log ("Creating table if not present");
+                    command.ExecuteNonQuery ();
+
+                    command.CommandText = "Select * FROM USERDICT";
+                    Util.Log ("Reading UserDict");
+                    using (var reader = command.ExecuteReader ()) {
+                        while (reader.Read ()) {
+                            GlobalVariables.UserDict.Add (UInt64.Parse (reader["DCID"].ToString ()), reader["MCUUID"].ToString ());
+                        }
+                    }
+                    connection.Close ();
+                }
+            }
+        }
+
+        public static bool TryAddUser (ulong DiscordID, string MinecraftUsername) {
+            string UUID = GetUUID (MinecraftUsername);
+            if (String.IsNullOrWhiteSpace (UUID))
+               return false;
+            if(GlobalVariables.UserDict.TryAdd (DiscordID, UUID))
+                return false;
+            using (var connection = new SQLiteConnection (userdictdbDataSource)) {
+                using (var command = new SQLiteCommand (connection)) {
+                    Util.Log ("opening Connection");
+                    connection.Open ();
+                    command.CommandText = $"INSERT INTO USERDICT (DCID,MCUUID) VALUES ('{DiscordID}','{UUID}')";
+                    command.ExecuteNonQuery ();
+                    connection.Close ();
+                    Task.Run (() => Program.Sync (DiscordID, UUID));
+                    return true;
+                }
+            }
+        }
+
+        public static List<string> GetUsersLPRanks (String MinecraftUUID) {
+            List<string> Ranks = new List<string> ();
+            using (var connection = new SQLiteConnection (lpdbDataSource)) {
+                using (var command = new SQLiteCommand (connection)) {
+                    connection.Open ();
+                    command.CommandText = "SELECT uuid, permission FROM luckperms_user_permissions";
+                    using (var reader = command.ExecuteReader ()) {
+                        while (reader.Read ()) {
+                            if (reader["uuid"].ToString () != MinecraftUUID)
+                                continue;
+                            if (!reader["permission"].ToString ().StartsWith ("group."))
+                                continue;
+                            Ranks.Add (reader["permission"].ToString ().Replace ("group.", String.Empty));
+                        }
+                    }
+                }
+            }
+            return Ranks;
+        }
+        private static string GetUUID (String MinecraftUsername) {
+            string str = null;
+            using (var connection = new SQLiteConnection (lpdbDataSource)) {
+                using (var command = new SQLiteCommand (connection)) {
+                    connection.Open ();
+                    command.CommandText = "SELECT uuid, username FROM luckperms_players";
+                    using (var reader = command.ExecuteReader ()) {
+                        while (reader.Read ()) {
+                            if (reader["username"].ToString () != MinecraftUsername)
+                                continue;
+                            str = reader["uuid"].ToString ();
+                        }
+
+                    }
+                    connection.Close ();
+                    return str;
+                }
+            }
+        }
+
+        private static void GenerateRoleDict () {
+            Dictionary<string, string> RoleDict = new Dictionary<string, string> ();
             Util.Log ("LPRSB/RoleDict.json not found, generating");
-            ReadLPDB();
+            GetLPRanks ();
+            Discord.Discord.GetRoles ();
+            foreach (var rank in GlobalVariables.LPRanks) {
+                foreach (var role in GlobalVariables.DCRanks) {
+                    if (rank.ToUpper ().Replace (" ", "") == role.ToUpper ().Replace (" ", "")) {
+                        Util.Log ($"Do you want to synchronize \"{rank}\" with \"{role}\" Y/N", "Input", String.Empty);
+                        if (Console.ReadLine () == "Y") {
+                            RoleDict.Add (rank, role);
+                            Util.Log ($"{rank} : {role} added to RoleDict");
+                            Util.Log ("If your ranks weren't found automatically, add them Manually in LPRSB/RoleDict.json");
+                        }
+                    }
+                }
+            }
+            string JSON = JsonConvert.SerializeObject (RoleDict, Formatting.Indented);
+            File.WriteAllText (GlobalVariables.BaseDirectory + "/LPRSB/RoleDict.json", JSON);
         }
 
-        private static void ReadLPDB()
-        {
+        private static void GetLPRanks () {
             // switch("SQLITE")
-            switch(GlobalVariables.DatabaseType.ToUpper())
-            {
+            switch (GlobalVariables.DatabaseType.ToUpper ()) {
                 case "SQLITE":
-                    using(var connection = new SQLiteConnection("data source=" + GlobalVariables.BaseDirectory + "/luckperms/luckperms-sqlite.db;mode=ReadOnly"))
-                    {
-                        using(var command = new SQLiteCommand(connection))
-                        {
-                            connection.Open();
+                    using (var connection = new SQLiteConnection (lpdbDataSource)) {
+                        using (var command = new SQLiteCommand (connection)) {
+                            connection.Open ();
 
                             command.CommandText = "Select * From luckperms_groups";
 
-                            using(var reader = command.ExecuteReader())
-                            {
-                                while(reader.Read())
-                                {
-                                    GlobalVariables.LPRanks.Add(reader["name"].ToString());
-                                    
+                            using (var reader = command.ExecuteReader ()) {
+                                while (reader.Read ()) {
+                                    GlobalVariables.LPRanks.Add (reader["name"].ToString ());
+
                                 }
                             }
-                        }   
-                    }
-                    Util.Log("LP ranks found");
-                    foreach(var rank in GlobalVariables.LPRanks)
-                    {
-                        Console.Write(rank+", ");
+                            connection.Close ();
+                        }
                     }
                     break;
                 default:
-                    throw new Exception("The current Luckperms database is either invalid or not yet supported!");
+                    throw new Exception ("The current Luckperms database is either invalid or not yet supported!");
             }
         }
         private static void GenerateProperties () {
             ESettings settings = new ESettings ();
             Util.Log ("LPRSB/Properties.json not found, Generating");
             Util.Log ("Creating Directory");
-            Directory.CreateDirectory(GlobalVariables.BaseDirectory + "/LPRSB/");
+            Directory.CreateDirectory (GlobalVariables.BaseDirectory + "/LPRSB/");
             Util.Log ("Searching for luckperms.conf");
             string LPConfFile = Directory.GetFiles (GlobalVariables.BaseDirectory, "luckperms.conf", SearchOption.AllDirectories).FirstOrDefault (); //Search for luckperms.conf in all sub-directories
             if (String.IsNullOrWhiteSpace (LPConfFile)) //If luckperms.conf not found throw exception
@@ -112,7 +206,7 @@ namespace LPRankSyncBot
             while (true) { // get the ID of the Username Input Channel from user
                 Util.Log ($"Please Enter Username Input Channel ID:", "Input", String.Empty);
                 string input = Console.ReadLine ();
-                if (!Int64.TryParse (input, out settings.UsernameChannel)) {
+                if (!UInt64.TryParse (input, out settings.UsernameChannel)) {
                     Util.Log ("Invalid ID, please try again!", "Input", String.Empty);
                 } else
                     break;
@@ -122,7 +216,7 @@ namespace LPRankSyncBot
             System.IO.File.WriteAllText (GlobalVariables.BaseDirectory + "/LPRSB/Properties.json", JSON); // Create/Write JSON to Properties File
         }
 
-        public static string GetDatabaseType (string LPConfFile) {
+        private static string GetDatabaseType (string LPConfFile) {
             string result = string.Empty;
             var lines = File.ReadAllLines (LPConfFile);
             foreach (var line in lines) { // look for a line that contains "storage-method" and doesn't contain "#"
@@ -137,5 +231,6 @@ namespace LPRankSyncBot
                 throw new System.Exception ("Database type not found, your luckperms configuration file (luckperms.conf) maybe broken");
             return result;
         }
+
     }
 }
