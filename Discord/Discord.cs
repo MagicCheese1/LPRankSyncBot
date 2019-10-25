@@ -27,7 +27,7 @@ namespace LPRankSyncBot.Discord {
         }
 
         private static async Task Client_Log (LogMessage message) {
-            Util.Log (message.Message, message.Source, "Discord");
+            Util.Log (message.Message, "Discord" ,message.Source);
         }
 
         private static async Task Client_MessageReceived (SocketMessage message) {

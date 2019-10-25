@@ -62,13 +62,14 @@ namespace LPRankSyncBot {
                             GlobalVariables.UserDict.Add (UInt64.Parse (reader["DCID"].ToString ()), reader["MCUUID"].ToString ());
                         }
                     }
-
+                    Util.Log ("UserDict Database Loaded sucessfully!");
                 }
                 connection.Close ();
             }
         }
 
         public static bool TryAddUser (ulong DiscordID, string MinecraftUsername) {
+            Util.Log("Trying to add user to Db");
             string UUID = GetUUID (MinecraftUsername);
             if (String.IsNullOrWhiteSpace (UUID))
                return false;
@@ -80,6 +81,7 @@ namespace LPRankSyncBot {
                     connection.Open ();
                     command.CommandText = $"INSERT INTO USERDICT (DCID,MCUUID) VALUES ('{DiscordID}','{UUID}')";
                     command.ExecuteNonQuery ();
+                    Util.Log("User added sucessfully");
                     Program.Sync (DiscordID, UUID);
                 
                 }
