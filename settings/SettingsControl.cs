@@ -78,7 +78,7 @@ namespace LPRankSyncBot {
                 using (var command = new SQLiteCommand (connection)) {
                     Util.Log ("opening Connection");
                     connection.Open ();
-                    command.CommandText = "INSERT INTO USERDICT (DCID,MCUUID) VALUES ('865268862685','sdfhf56w46n45y4y45')";
+                    command.CommandText = $"INSERT INTO USERDICT (DCID,MCUUID) VALUES ('{DiscordID}','{UUID}')";
                     command.ExecuteNonQuery ();
                     Program.Sync (DiscordID, UUID);
                 
