@@ -31,19 +31,15 @@ namespace LPRankSyncBot.Discord {
         }
 
         private static async Task Client_MessageReceived (SocketMessage message) {
-            try {
                 var Message = message as SocketUserMessage;
                 var Context = new SocketCommandContext (Client, Message);
 
                 if (Context.Message.Channel.Id != GlobalVariables.UsernameChannel)
                     return;
                 if (SettingsControl.TryAddUser (Context.Message.Author.Id, Context.Message.Content))
-                    await Context.Message.AddReactionAsync (new Emoji ("✔️"));
+                    await Context.Message.AddReactionAsync (new Emoji ("✅"));
                 else
                     await Context.Message.AddReactionAsync (new Emoji ("❌"));
-            } catch (Exception e) {
-                System.Console.WriteLine(e.Message);
-            }
         }
         public static void GetRoles () {
             foreach (var role in Client.Guilds.FirstOrDefault ().Roles) {
@@ -52,8 +48,8 @@ namespace LPRankSyncBot.Discord {
         }
 
         public static void GiveRole (ulong DiscordID, string role) {
-            Client.Guilds.FirstOrDefault ().GetUser (DiscordID).AddRoleAsync (Client.Guilds.FirstOrDefault ().Roles.FirstOrDefault (r => r.Name == role));
-
+            var Role = Client.Guilds.FirstOrDefault ().Roles.FirstOrDefault (r => r.Name.ToUpper() == role.ToUpper());
+            Client.Guilds.FirstOrDefault ().GetUser (DiscordID).AddRoleAsync (Role);
         }
     }
 }

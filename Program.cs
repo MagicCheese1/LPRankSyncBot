@@ -23,7 +23,7 @@ namespace LPRankSyncBot {
         public static async Task SyncAll () {
             while (true) {
                 foreach (var entry in GlobalVariables.UserDict) {
-                    Task.Run (() => Sync (entry.Key, entry.Value));
+                   Sync (entry.Key, entry.Value);
                 }
                 await Task.Delay (600000);
             }

@@ -11,7 +11,7 @@ using Newtonsoft.Json;
 namespace LPRankSyncBot {
     public class SettingsControl {
 
-        private static string lpdbDataSource = "data source=" + GlobalVariables.BaseDirectory + "/luckperms/luckperms-sqlite.db;mode=ReadOnly";
+        private static string lpdbDataSource = "data source=" + GlobalVariables.BaseDirectory + "/luckperms/luckperms-sqlite.db";
         private static string userdictdbDataSource = "data source=" + GlobalVariables.BaseDirectory + "/LPRSB/UserDict.db";
         public static void loadSettings () {
             Util.Log ("Searching for LPRSB/Properties.json");
@@ -62,8 +62,9 @@ namespace LPRankSyncBot {
                             GlobalVariables.UserDict.Add (UInt64.Parse (reader["DCID"].ToString ()), reader["MCUUID"].ToString ());
                         }
                     }
-                    connection.Close ();
+
                 }
+                connection.Close ();
             }
         }
 
@@ -71,19 +72,20 @@ namespace LPRankSyncBot {
             string UUID = GetUUID (MinecraftUsername);
             if (String.IsNullOrWhiteSpace (UUID))
                return false;
-            if(GlobalVariables.UserDict.TryAdd (DiscordID, UUID))
+            if(!GlobalVariables.UserDict.TryAdd (DiscordID, UUID))
                 return false;
             using (var connection = new SQLiteConnection (userdictdbDataSource)) {
                 using (var command = new SQLiteCommand (connection)) {
                     Util.Log ("opening Connection");
                     connection.Open ();
-                    command.CommandText = $"INSERT INTO USERDICT (DCID,MCUUID) VALUES ('{DiscordID}','{UUID}')";
+                    command.CommandText = "INSERT INTO USERDICT (DCID,MCUUID) VALUES ('865268862685','sdfhf56w46n45y4y45')";
                     command.ExecuteNonQuery ();
-                    connection.Close ();
-                    Task.Run (() => Program.Sync (DiscordID, UUID));
-                    return true;
+                    Program.Sync (DiscordID, UUID);
+                
                 }
+                connection.Close();
             }
+            return true;
         }
 
         public static List<string> GetUsersLPRanks (String MinecraftUUID) {
@@ -101,6 +103,7 @@ namespace LPRankSyncBot {
                             Ranks.Add (reader["permission"].ToString ().Replace ("group.", String.Empty));
                         }
                     }
+                    connection.Close();
                 }
             }
             return Ranks;
@@ -137,11 +140,11 @@ namespace LPRankSyncBot {
                         if (Console.ReadLine () == "Y") {
                             RoleDict.Add (rank, role);
                             Util.Log ($"{rank} : {role} added to RoleDict");
-                            Util.Log ("If your ranks weren't found automatically, add them Manually in LPRSB/RoleDict.json");
                         }
                     }
                 }
             }
+            Util.Log ("If your ranks weren't found automatically, add them Manually in LPRSB/RoleDict.json");
             string JSON = JsonConvert.SerializeObject (RoleDict, Formatting.Indented);
             File.WriteAllText (GlobalVariables.BaseDirectory + "/LPRSB/RoleDict.json", JSON);
         }
