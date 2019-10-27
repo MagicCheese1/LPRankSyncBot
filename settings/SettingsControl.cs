@@ -137,7 +137,7 @@ namespace LPRankSyncBot {
             Discord.Discord.GetRoles ();
             foreach (var rank in GlobalVariables.LPRanks) {
                 foreach (var role in GlobalVariables.DCRanks) {
-                    if (rank.ToUpper ().Replace (" ", "") == role.ToUpper ().Replace (" ", "")) {
+                    if (rank.ToUpper ().Replace (" ", "") == role.ToUpper ().Replace (" ", "") || rank.ToUpper ().Replace (" ", "").Contains(role.ToUpper ().Replace (" ", "")) || role.ToUpper ().Replace (" ", "").Contains(rank.ToUpper ().Replace (" ", ""))) {
                         Util.Log ($"Do you want to synchronize \"{rank}\" with \"{role}\" Y/N", "Input", String.Empty);
                         if (Console.ReadLine () == "Y") {
                             RoleDict.Add (rank, role);
