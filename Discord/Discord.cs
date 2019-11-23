@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
@@ -27,29 +28,36 @@ namespace LPRankSyncBot.Discord {
         }
 
         private static async Task Client_Log (LogMessage message) {
-            Util.Log (message.Message, "Discord" ,message.Source);
+            Util.Log (message.Message, "Discord", message.Source);
         }
 
         private static async Task Client_MessageReceived (SocketMessage message) {
-                var Message = message as SocketUserMessage;
-                var Context = new SocketCommandContext (Client, Message);
+            var Message = message as SocketUserMessage;
+            var Context = new SocketCommandContext (Client, Message);
 
-                if (Context.Message.Channel.Id != GlobalVariables.UsernameChannel)
-                    return;
-                if (SettingsControl.TryAddUser (Context.Message.Author.Id, Context.Message.Content))
-                    await Context.Message.AddReactionAsync (new Emoji ("✅"));
-                else
-                    await Context.Message.AddReactionAsync (new Emoji ("❌"));
+            if (Context.Message.Channel.Id != GlobalVariables.UsernameChannel)
+                return;
+            if (SettingsControl.TryAddUser (Context.Message.Author.Id, Context.Message.Content))
+                await Context.Message.AddReactionAsync (new Emoji ("✅"));
+            else
+                await Context.Message.AddReactionAsync (new Emoji ("❌"));
         }
         public static void GetRoles () {
             foreach (var role in Client.Guilds.FirstOrDefault ().Roles) {
-                GlobalVariables.DCRanks.Add (role.Name);
+                GlobalVariables.DCRanks.Add (role.Id);
             }
         }
 
+        public static SocketRole GetRole (ulong RoleId) {
+            return (Client.Guilds.FirstOrDefault ().GetRole (RoleId));
+        }
         public static void GiveRole (ulong DiscordID, string role) {
-            var Role = Client.Guilds.FirstOrDefault ().Roles.FirstOrDefault (r => r.Name.ToUpper() == role.ToUpper());
+            var Role = Client.Guilds.FirstOrDefault ().Roles.FirstOrDefault (r => r.Name.ToUpper () == role.ToUpper ());
             Client.Guilds.FirstOrDefault ().GetUser (DiscordID).AddRoleAsync (Role);
+        }
+        public static void RemoveRole (ulong DiscordID, string role) {
+            var Role = Client.Guilds.FirstOrDefault ().Roles.FirstOrDefault (r => r.Name.ToUpper () == role.ToUpper ());
+            Client.Guilds.FirstOrDefault ().GetUser (DiscordID).RemoveRoleAsync (Role);
         }
     }
 }

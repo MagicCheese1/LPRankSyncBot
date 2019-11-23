@@ -8,8 +8,8 @@ namespace LPRankSyncBot {
         public static ulong UsernameChannel;
         public static string Token;
         public static List<string> LPRanks = new List<string> ();
-        public static List<string> DCRanks = new List<string> ();
-        public static Dictionary<string, string> RoleDict = new Dictionary<string, string> ();
+        public static List<ulong> DCRanks = new List<ulong> ();
+        public static Dictionary<string, ulong> RoleDict = new Dictionary<string, ulong> ();
         public static Dictionary<ulong, String> UserDict = new Dictionary<ulong, string> ();
     }
 }

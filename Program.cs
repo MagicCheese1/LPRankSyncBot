@@ -17,24 +17,24 @@ namespace LPRankSyncBot {
         public static void DiscordReady () {
             SettingsControl.LoadRoleDict (); // Load the role Dictonary
             SettingsControl.LoadUserDict ();
-            SyncAll();
+            SyncAll ();
         }
 
         public static async Task SyncAll () {
             while (true) {
-                Util.Log("AutoSync Started");
+                Util.Log ("AutoSync Started");
                 foreach (var entry in GlobalVariables.UserDict) {
-                   Sync (entry.Key, entry.Value);
+                    Sync (entry.Key, entry.Value);
                 }
                 await Task.Delay (600000);
             }
         }
 
         public static void Sync (ulong DiscordID, string MinecraftUUID) {
-            Util.Log($"Syncing {DiscordID} with {MinecraftUUID}");
+            Util.Log ($"Syncing {DiscordID} with {MinecraftUUID}");
             foreach (var Rank in SettingsControl.GetUsersLPRanks (MinecraftUUID)) {
                 foreach (var entry in GlobalVariables.RoleDict) {
-                    if (Rank == entry.Value) {
+                    if (Rank == Discord.Discord.GetRole(entry.Value).Name) {
                         Discord.Discord.GiveRole (DiscordID, entry.Key);
                     }
                 }

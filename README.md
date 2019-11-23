@@ -10,8 +10,9 @@ The program can only run from your servers directory.
 
 ## TODO
 * Sync taken roles
-* start using IDs instead of names, for relaibility
+* ~~start using IDs instead of names, for relaibility~~
 * Web control panel
+* Add Support for MySQL, H2 and maybe the rest
 
 ## Prerequisites For development and building
 

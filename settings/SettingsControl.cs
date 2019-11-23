@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+using Discord.WebSocket;
 
 namespace LPRankSyncBot {
     public class SettingsControl {
@@ -36,7 +37,7 @@ namespace LPRankSyncBot {
             if (String.IsNullOrWhiteSpace (RoleDictContent)) //If RoleDict file found but empty, generate one
                 GenerateRoleDict ();
             Util.Log ("Loading LPRSB/RoleDict.json");
-            GlobalVariables.RoleDict = JsonConvert.DeserializeObject<Dictionary<string, string>> (RoleDictContent);
+            GlobalVariables.RoleDict = JsonConvert.DeserializeObject<Dictionary<string, ulong>> (RoleDictContent);
             Util.Log ("LPRSB/RoleDict.json Loaded Sucessfully!");
         }
 
@@ -131,17 +132,18 @@ namespace LPRankSyncBot {
         }
 
         private static void GenerateRoleDict () {
-            Dictionary<string, string> RoleDict = new Dictionary<string, string> ();
+            Dictionary<string, ulong> RoleDict = new Dictionary<string, ulong> ();
             Util.Log ("LPRSB/RoleDict.json not found, generating");
             GetLPRanks ();
             Discord.Discord.GetRoles ();
             foreach (var rank in GlobalVariables.LPRanks) {
-                foreach (var role in GlobalVariables.DCRanks) {
-                    if (rank.ToUpper ().Replace (" ", "") == role.ToUpper ().Replace (" ", "") || rank.ToUpper ().Replace (" ", "").Contains(role.ToUpper ().Replace (" ", "")) || role.ToUpper ().Replace (" ", "").Contains(rank.ToUpper ().Replace (" ", ""))) {
-                        Util.Log ($"Do you want to synchronize \"{rank}\" with \"{role}\" Y/N", "Input", String.Empty);
+                foreach (var roleId in GlobalVariables.DCRanks) {
+                    SocketRole role = Discord.Discord.GetRole(roleId);
+                    if (rank.ToUpper ().Replace (" ", "") == role.Name.ToUpper ().Replace (" ", "") || rank.ToUpper ().Replace (" ", "").Contains(role.Name.ToUpper ().Replace (" ", "")) || role.Name.ToUpper ().Replace (" ", "").Contains(rank.ToUpper ().Replace (" ", ""))) {
+                        Util.Log ($"Do you want to synchronize \"{rank}\" with \"{role.Name}\" Y/N", "Input", String.Empty);
                         if (Console.ReadLine () == "Y") {
-                            RoleDict.Add (rank, role);
-                            Util.Log ($"{rank} : {role} added to RoleDict");
+                            RoleDict.Add (rank, roleId);
+                            Util.Log ($"{rank} : {role.Name} added to RoleDict");
                         }
                     }
                 }
