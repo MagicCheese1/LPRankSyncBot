@@ -47,16 +47,19 @@ namespace LPRankSyncBot.Discord {
                 GlobalVariables.DCRanks.Add (role.Id);
             }
         }
-
+        public static List<SocketRole> GetUserDCRoles(ulong DiscordID)
+        {
+            return new List<SocketRole>(Client.Guilds.FirstOrDefault().GetUser(DiscordID).Roles);
+        }
         public static SocketRole GetRole (ulong RoleId) {
             return (Client.Guilds.FirstOrDefault ().GetRole (RoleId));
         }
-        public static void GiveRole (ulong DiscordID, string role) {
-            var Role = Client.Guilds.FirstOrDefault ().Roles.FirstOrDefault (r => r.Name.ToUpper () == role.ToUpper ());
+        public static void GiveRole (ulong DiscordID, ulong RoleId) {
+            var Role = Client.Guilds.FirstOrDefault ().GetRole(RoleId);
             Client.Guilds.FirstOrDefault ().GetUser (DiscordID).AddRoleAsync (Role);
         }
-        public static void RemoveRole (ulong DiscordID, string role) {
-            var Role = Client.Guilds.FirstOrDefault ().Roles.FirstOrDefault (r => r.Name.ToUpper () == role.ToUpper ());
+        public static void RemoveRole (ulong DiscordID, ulong RoleId) {
+            var Role = Client.Guilds.FirstOrDefault ().GetRole(RoleId);
             Client.Guilds.FirstOrDefault ().GetUser (DiscordID).RemoveRoleAsync (Role);
         }
     }

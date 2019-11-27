@@ -7,6 +7,7 @@ namespace LPRankSyncBot {
         public static string DatabaseType;
         public static ulong UsernameChannel;
         public static string Token;
+        public static int SyncDelayMin;
         public static List<string> LPRanks = new List<string> ();
         public static List<ulong> DCRanks = new List<ulong> ();
         public static Dictionary<string, ulong> RoleDict = new Dictionary<string, ulong> ();

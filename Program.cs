@@ -26,7 +26,7 @@ namespace LPRankSyncBot {
                 foreach (var entry in GlobalVariables.UserDict) {
                     Sync (entry.Key, entry.Value);
                 }
-                await Task.Delay (600000);
+                await Task.Delay (60000 * GlobalVariables.SyncDelayMin);
             }
         }
 
@@ -34,8 +34,19 @@ namespace LPRankSyncBot {
             Util.Log ($"Syncing {DiscordID} with {MinecraftUUID}");
             foreach (var Rank in SettingsControl.GetUsersLPRanks (MinecraftUUID)) {
                 foreach (var entry in GlobalVariables.RoleDict) {
-                    if (Rank == Discord.Discord.GetRole(entry.Value).Name) {
-                        Discord.Discord.GiveRole (DiscordID, entry.Key);
+                    if (Rank == entry.Key) {
+                        Discord.Discord.GiveRole (DiscordID, entry.Value);
+                    }
+                }
+            }
+            foreach (var Role in Discord.Discord.GetUserDCRoles (DiscordID)) {
+                foreach (var entry in GlobalVariables.RoleDict) {
+                    if(Role.Id == entry.Value)
+                    {
+                        if(!SettingsControl.GetUsersLPRanks(MinecraftUUID).Contains(entry.Key))
+                        {
+                            Discord.Discord.RemoveRole(DiscordID, entry.Value);
+                        }
                     }
                 }
             }

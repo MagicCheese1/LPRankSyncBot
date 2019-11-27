@@ -9,7 +9,7 @@ The program can only run from your servers directory.
 * [System.Data.SQlite](https://www.nuget.org/packages/System.Data.SQLite/) 1.0.111
 
 ## TODO
-* Sync taken roles
+* ~~Sync taken roles~~
 * ~~start using IDs instead of names, for relaibility~~
 * Web control panel
 * Add Support for MySQL, H2 and maybe the rest

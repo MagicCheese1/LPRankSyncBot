@@ -26,6 +26,7 @@ namespace LPRankSyncBot {
             GlobalVariables.DatabaseType = settings.DatabaseType; //Load all the Properties into GlobalVariables class
             GlobalVariables.UsernameChannel = settings.UsernameChannel;
             GlobalVariables.Token = settings.Token;
+            GlobalVariables.SyncDelayMin = settings.SyncDelayMin;
             Util.Log ("LPRSB/Properties.json loaded sucessfully!");
         }
 
@@ -218,6 +219,8 @@ namespace LPRankSyncBot {
                 } else
                     break;
             }
+            Util.Log("Sync Delay(Min):");
+            settings.SyncDelayMin = Console.Read();
             Util.Log ("LPRSB/Propertis.json generated Sucessfully!");
             string JSON = JsonConvert.SerializeObject (settings); // convert object to JSON
             System.IO.File.WriteAllText (GlobalVariables.BaseDirectory + "/LPRSB/Properties.json", JSON); // Create/Write JSON to Properties File
