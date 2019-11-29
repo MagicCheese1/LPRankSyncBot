@@ -6,7 +6,8 @@ The program can only run from your servers directory.
 ## Usage
 
 ### Download and instalation
-1. Download the appropriate executable for your system from the [releases page](https://github.com/Dodison/LPRankSyncBot/releases) of this repo
+1. Download the appropriate executable for your system from the 
+<a href="https://github.com/Dodison/LPRankSyncBot/releases" target="_blank">release page</a> of this repo
 2. Put the executable into your sponge servers folder
 3. Run the executable
 
@@ -27,7 +28,7 @@ DatabaseType: What database the Luckperms plugin uses
 
 Username channel: ID of the channel where people put in their minecraft name
 
-Token: Discord bot token. [more info](https://discordpy.readthedocs.io/en/latest/discord.html)
+Token: Discord bot token. <a href="https://discordpy.readthedocs.io/en/latest/discord.html" target="_blank">more info</a>
 
 SyncDelayMin: how often should the program automatically synchronize (in minutes)
 
@@ -48,15 +49,15 @@ example:
 
 ## Prerequisites For development and building
 
-* [.Net Core SDK](https://dotnet.microsoft.com/download) 3.0
+* <a href="https://dotnet.microsoft.com/download" target="_blank">.Net Core SDK</a> 3.0
 
 
 ## Used packages
-* [Discord.net](https://www.nuget.org/packages/Discord.Net/) 2.1.1
-* [Newtonsoft.Json](https://www.nuget.org/packages/Newtonsoft.Json/) 12.0.2
-* [System.Data.SQlite](https://www.nuget.org/packages/System.Data.SQLite/) 1.0.111
+* <a href="https://www.nuget.org/packages/Discord.Net/" target="_blank">Discord.Net</a> 2.1.1
+* <a href="https://www.nuget.org/packages/Newtonsoft.Json/" target="_blank">Newtonsoft.Json</a>  12.0.3
+* <a href="https://www.nuget.org/packages/System.Data.SQLite/" target="_blank">System.Data.SQlite</a> 1.0.112
 
 
 ## License
-This repo is licensed under the [MIT License](https://choosealicense.com/licenses/mit/) - see the [LICENSE.txt](LICENSE.txt) file for details
+This repo is licensed under the <a href="https://choosealicense.com/licenses/mit/" target="_blank">MIT License</a> - see the [LICENSE.txt](LICENSE.txt) file for details
 
