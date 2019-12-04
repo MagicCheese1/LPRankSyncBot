@@ -1,13 +1,12 @@
 using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Data.SQLite;
 using System.IO;
 using System.Linq;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using Newtonsoft.Json;
+
 using Discord.WebSocket;
+
+using Newtonsoft.Json;
 
 namespace LPRankSyncBot {
     public class SettingsControl {
@@ -142,10 +141,12 @@ namespace LPRankSyncBot {
                     SocketRole role = Discord.Discord.GetRole(roleId);
                     if (rank.ToUpper ().Replace (" ", "") == role.Name.ToUpper ().Replace (" ", "") || rank.ToUpper ().Replace (" ", "").Contains(role.Name.ToUpper ().Replace (" ", "")) || role.Name.ToUpper ().Replace (" ", "").Contains(rank.ToUpper ().Replace (" ", ""))) {
                         Util.Log ($"Do you want to synchronize \"{rank}\" with \"{role.Name}\" Y/N", "Input", String.Empty);
-                        if (Console.ReadLine () == "Y") {
+                        string Input = Console.ReadLine ();
+                        if (Input.ToUpper() == "Y") {
                             RoleDict.Add (rank, roleId);
                             Util.Log ($"{rank} : {role.Name} added to RoleDict");
-                        }
+                        } else
+                             Util.Log ($"{rank} : {role.Name} not added to RoleDict");
                     }
                 }
             }
@@ -155,7 +156,6 @@ namespace LPRankSyncBot {
         }
 
         private static void GetLPRanks () {
-            // switch("SQLITE")
             switch (GlobalVariables.DatabaseType.ToUpper ()) {
                 case "SQLITE":
                     using (var connection = new SQLiteConnection (lpdbDataSource)) {

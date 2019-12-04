@@ -1,17 +1,18 @@
-﻿using System;
-using System.ComponentModel;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Hosting;
 
 namespace LPRankSyncBot {
     class Program {
-        private static void Main (string[] args) => new Program ().MainAsync ().GetAwaiter ().GetResult ();
+        private static void Main (string[] args) => new Program ().MainAsync (args).GetAwaiter ().GetResult ();
 
-        private async Task MainAsync () {
+        private async Task MainAsync (string[] args) {
             Util.Log ("Set BaseDirectory");
             GlobalVariables.BaseDirectory = System.IO.Path.GetDirectoryName (Process.GetCurrentProcess ().MainModule.FileName); // Finds and saves the Directory, this program is running in 
             SettingsControl.loadSettings (); //Load all the settings like bot token etc.
-            await Discord.Discord.DiscordAsync (); //connect to Discords API 
+            CreateHostBuilder (args).Build ().RunAsync ();
+            await Discord.Discord.DiscordAsync (); //connect to Discords api
         }
 
         public static void DiscordReady () {
@@ -41,15 +42,18 @@ namespace LPRankSyncBot {
             }
             foreach (var Role in Discord.Discord.GetUserDCRoles (DiscordID)) {
                 foreach (var entry in GlobalVariables.RoleDict) {
-                    if(Role.Id == entry.Value)
-                    {
-                        if(!SettingsControl.GetUsersLPRanks(MinecraftUUID).Contains(entry.Key))
-                        {
-                            Discord.Discord.RemoveRole(DiscordID, entry.Value);
+                    if (Role.Id == entry.Value) {
+                        if (!SettingsControl.GetUsersLPRanks (MinecraftUUID).Contains (entry.Key)) {
+                            Discord.Discord.RemoveRole (DiscordID, entry.Value);
                         }
                     }
                 }
             }
         }
+        public static IHostBuilder CreateHostBuilder (string[] args) =>
+            Host.CreateDefaultBuilder (args)
+            .ConfigureWebHostDefaults (webBuilder => {
+                webBuilder.UseStartup<Startup> ();
+            });
     }
 }
